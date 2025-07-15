@@ -1,0 +1,66 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+// Define a Student class
+class Student {
+    String name;
+    double grade;
+
+    Student(String name, double grade) {
+        this.name = name;
+        this.grade = grade;
+    }
+}
+
+public class StudentGradeManager {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        ArrayList<Student> students = new ArrayList<>();
+
+        System.out.print("Enter number of students: ");
+        int count = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        // Collect student data
+        for (int i = 0; i < count; i++) {
+            System.out.println("\nEnter details for student " + (i + 1) + ":");
+
+            System.out.print("Name: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Grade: ");
+            double grade = scanner.nextDouble();
+            scanner.nextLine(); // Consume newline
+
+            students.add(new Student(name, grade));
+        }
+
+        // Calculate average, highest, lowest
+        double total = 0;
+        double highest = Double.MIN_VALUE;
+        double lowest = Double.MAX_VALUE;
+
+        for (Student s : students) {
+            total += s.grade;
+            if (s.grade > highest) highest = s.grade;
+            if (s.grade < lowest) lowest = s.grade;
+        }
+
+        double average = total / students.size();
+
+        // Display results
+        System.out.println("\n--- Grade Summary ---");
+        System.out.printf("Average Grade: %.2f\n", average);
+        System.out.printf("Highest Grade: %.2f\n", highest);
+        System.out.printf("Lowest Grade: %.2f\n", lowest);
+
+        // Display all student records
+        System.out.println("\n--- Student Details ---");
+        for (Student s : students) {
+            System.out.printf("Name: %s, Grade: %.2f\n", s.name, s.grade);
+        }
+
+        scanner.close();
+    }
+}
