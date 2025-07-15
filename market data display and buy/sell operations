@@ -1,0 +1,147 @@
+import java.util.*;
+
+class Stock {
+    String name;
+    double price;
+
+    Stock(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    // Simulate random price fluctuation
+    void updatePrice() {
+        double change = (Math.random() - 0.5) * 10; // -5 to +5
+        price = Math.round((price + change) * 100.0) / 100.0;
+    }
+}
+
+public class EnhancedStockTrading {
+
+    static Map<String, Stock> market = new HashMap<>();
+    static Map<String, Integer> portfolio = new HashMap<>();
+    static double balance = 10000.0;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        initMarket();
+
+        System.out.println("📈 Welcome to Java Stock Trading Simulator!");
+        System.out.println("Commands: market, buy, sell, portfolio, balance, exit");
+
+        while (true) {
+            System.out.print("\nEnter command: ");
+            String cmd = scanner.next().toLowerCase();
+
+            switch (cmd) {
+                case "market":
+                    updateMarket();
+                    showMarket();
+                    break;
+                case "buy":
+                    buyStock(scanner);
+                    break;
+                case "sell":
+                    sellStock(scanner);
+                    break;
+                case "portfolio":
+                    showPortfolio();
+                    break;
+                case "balance":
+                    System.out.printf("💰 Balance: $%.2f\n", balance);
+                    break;
+                case "exit":
+                    System.out.println("👋 Exiting... Goodbye!");
+                    return;
+                default:
+                    System.out.println("❓ Invalid command. Try again.");
+            }
+        }
+    }
+
+    static void initMarket() {
+        market.put("AAPL", new Stock("Apple", 150.0));
+        market.put("GOOG", new Stock("Google", 2800.0));
+        market.put("TSLA", new Stock("Tesla", 720.0));
+        market.put("AMZN", new Stock("Amazon", 3400.0));
+    }
+
+    static void updateMarket() {
+        for (Stock s : market.values()) {
+            s.updatePrice();
+        }
+    }
+
+    static void showMarket() {
+        System.out.println("\n📊 Current Market Prices:");
+        for (String symbol : market.keySet()) {
+            Stock s = market.get(symbol);
+            System.out.printf("%s (%s): $%.2f\n", s.name, symbol, s.price);
+        }
+    }
+
+    static void buyStock(Scanner scanner) {
+        System.out.print("Enter stock symbol to buy: ");
+        String symbol = scanner.next().toUpperCase();
+
+        if (!market.containsKey(symbol)) {
+            System.out.println("⚠️ Stock not found.");
+            return;
+        }
+
+        System.out.print("Enter quantity: ");
+        int qty = scanner.nextInt();
+
+        double cost = market.get(symbol).price * qty;
+        if (cost > balance) {
+            System.out.println("❌ Insufficient balance.");
+        } else {
+            balance -= cost;
+            portfolio.put(symbol, portfolio.getOrDefault(symbol, 0) + qty);
+            System.out.printf("✅ Bought %d shares of %s for $%.2f\n", qty, symbol, cost);
+        }
+    }
+
+    static void sellStock(Scanner scanner) {
+        System.out.print("Enter stock symbol to sell: ");
+        String symbol = scanner.next().toUpperCase();
+
+        if (!portfolio.containsKey(symbol)) {
+            System.out.println("⚠️ You don’t own this stock.");
+            return;
+        }
+
+        System.out.print("Enter quantity: ");
+        int qty = scanner.nextInt();
+        int owned = portfolio.get(symbol);
+
+        if (qty > owned) {
+            System.out.println("❌ You don’t own enough shares.");
+        } else {
+            double revenue = market.get(symbol).price * qty;
+            balance += revenue;
+
+            if (qty == owned) {
+                portfolio.remove(symbol);
+            } else {
+                portfolio.put(symbol, owned - qty);
+            }
+
+            System.out.printf("✅ Sold %d shares of %s for $%.2f\n", qty, symbol, revenue);
+        }
+    }
+
+    static void showPortfolio() {
+        System.out.println("\n📁 Your Portfolio:");
+        if (portfolio.isEmpty()) {
+            System.out.println("You don’t own any stocks.");
+        } else {
+            for (String symbol : portfolio.keySet()) {
+                int qty = portfolio.get(symbol);
+                double price = market.get(symbol).price;
+                double value = qty * price;
+                System.out.printf("%s: %d shares @ $%.2f = $%.2f\n", symbol, qty, price, value);
+            }
+        }
+    }
+}
