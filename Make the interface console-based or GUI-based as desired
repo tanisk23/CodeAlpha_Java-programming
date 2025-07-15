@@ -1,0 +1,93 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+class Student {
+    String name;
+    double grade;
+
+    Student(String name, double grade) {
+        this.name = name;
+        this.grade = grade;
+    }
+}
+
+public class StudentGradeGUI extends JFrame {
+    private final ArrayList<Student> students = new ArrayList<>();
+    private final JTextArea outputArea = new JTextArea(10, 40);
+
+    public StudentGradeGUI() {
+        setTitle("Student Grade Manager");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new FlowLayout());
+
+        JButton addButton = new JButton("Add Student");
+        JButton reportButton = new JButton("Show Summary");
+
+        addButton.addActionListener(e -> addStudent());
+        reportButton.addActionListener(e -> showSummary());
+
+        outputArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(outputArea);
+
+        add(addButton);
+        add(reportButton);
+        add(scrollPane);
+
+        setSize(500, 300);
+        setVisible(true);
+    }
+
+    private void addStudent() {
+        String name = JOptionPane.showInputDialog(this, "Enter Student Name:");
+        if (name == null || name.trim().isEmpty()) return;
+
+        String gradeStr = JOptionPane.showInputDialog(this, "Enter Grade for " + name + ":");
+        try {
+            double grade = Double.parseDouble(gradeStr);
+            students.add(new Student(name, grade));
+            outputArea.append("Added: " + name + " - Grade: " + grade + "\n");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid grade entered!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showSummary() {
+        if (students.isEmpty()) {
+            outputArea.append("No students to summarize.\n");
+            return;
+        }
+
+        double total = 0;
+        double highest = Double.MIN_VALUE;
+        double lowest = Double.MAX_VALUE;
+        Student topStudent = null;
+        Student bottomStudent = null;
+
+        for (Student s : students) {
+            total += s.grade;
+            if (s.grade > highest) {
+                highest = s.grade;
+                topStudent = s;
+            }
+            if (s.grade < lowest) {
+                lowest = s.grade;
+                bottomStudent = s;
+            }
+        }
+
+        double avg = total / students.size();
+
+        outputArea.append("\n===== Summary Report =====\n");
+        outputArea.append("Total Students: " + students.size() + "\n");
+        outputArea.append(String.format("Average Grade: %.2f\n", avg));
+        outputArea.append(String.format("Highest Grade: %.2f (%s)\n", topStudent.grade, topStudent.name));
+        outputArea.append(String.format("Lowest Grade: %.2f (%s)\n", bottomStudent.grade, bottomStudent.name));
+        outputArea.append("==========================\n");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(StudentGradeGUI::new);
+    }
+}
