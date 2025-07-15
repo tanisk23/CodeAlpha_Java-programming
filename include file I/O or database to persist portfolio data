@@ -1,0 +1,145 @@
+import java.io.*;
+import java.util.*;
+
+public class User {
+    private double balance;
+    private final Map<String, Integer> portfolio;
+    private final List<Transaction> transactions;
+
+    public User(double startingBalance) {
+        this.balance = startingBalance;
+        this.portfolio = new HashMap<>();
+        this.transactions = new ArrayList<>();
+    }
+
+    // File save method
+    public void saveToFiles() {
+        try (PrintWriter pw1 = new PrintWriter("balance.txt");
+             PrintWriter pw2 = new PrintWriter("portfolio.txt");
+             PrintWriter pw3 = new PrintWriter("transactions.txt")) {
+
+            pw1.println(balance);
+
+            for (Map.Entry<String, Integer> entry : portfolio.entrySet()) {
+                pw2.println(entry.getKey() + " " + entry.getValue());
+            }
+
+            for (Transaction t : transactions) {
+                pw3.println(t.toFileFormat());
+            }
+
+            System.out.println("✅ Portfolio saved successfully.");
+        } catch (IOException e) {
+            System.out.println("❌ Error saving data: " + e.getMessage());
+        }
+    }
+
+    // File load method
+    public void loadFromFiles() {
+        try (Scanner scan1 = new Scanner(new File("balance.txt"));
+             Scanner scan2 = new Scanner(new File("portfolio.txt"));
+             Scanner scan3 = new Scanner(new File("transactions.txt"))) {
+
+            balance = Double.parseDouble(scan1.nextLine());
+
+            while (scan2.hasNext()) {
+                String symbol = scan2.next();
+                int qty = scan2.nextInt();
+                portfolio.put(symbol, qty);
+            }
+
+            while (scan3.hasNextLine()) {
+                String line = scan3.nextLine();
+                transactions.add(Transaction.fromFileFormat(line));
+            }
+
+            System.out.println("📂 Portfolio loaded successfully.");
+        } catch (FileNotFoundException e) {
+            System.out.println("📁 No saved data found, starting fresh.");
+        }
+    }
+
+    // The rest: buy/sell/showPortfolio/showTransactions/getBalance (same as before)
+}
+public class Transaction {
+    private final String type;
+    private final String stockSymbol;
+    private final int quantity;
+    private final double price;
+    private final Date timestamp;
+
+    public Transaction(String type, String stockSymbol, int quantity, double price) {
+        this.type = type;
+        this.stockSymbol = stockSymbol;
+        this.quantity = quantity;
+        this.price = price;
+        this.timestamp = new Date();
+    }
+
+    public String toString() {
+        return "[" + timestamp + "] " + type + " " + quantity + " shares of " + stockSymbol + " @ $" + price;
+    }
+
+    public String toFileFormat() {
+        return type + "," + stockSymbol + "," + quantity + "," + price + "," + timestamp.getTime();
+    }
+
+    public static Transaction fromFileFormat(String line) {
+        String[] parts = line.split(",");
+        String type = parts[0];
+        String symbol = parts[1];
+        int qty = Integer.parseInt(parts[2]);
+        double price = Double.parseDouble(parts[3]);
+        Date timestamp = new Date(Long.parseLong(parts[4]));
+        Transaction t = new Transaction(type, symbol, qty, price);
+        t.timestamp.setTime(timestamp.getTime()); // override with saved time
+        return t;
+    }
+}
+public class TradingApp {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Market market = new Market();
+        User user = new User(10000);
+        user.loadFromFiles();  // <-- Load on startup
+
+        System.out.println("📈 Welcome to OOP Stock Trading Simulator with Persistence!");
+        System.out.println("Commands: market, buy, sell, portfolio, history, balance, save, exit");
+
+        while (true) {
+            System.out.print("\nEnter command: ");
+            String cmd = scanner.next().toLowerCase();
+
+            switch (cmd) {
+                case "market":
+                    market.updatePrices();
+                    market.displayMarket();
+                    break;
+                case "buy":
+                    // same as before...
+                    break;
+                case "sell":
+                    // same as before...
+                    break;
+                case "portfolio":
+                    user.showPortfolio(market.getStockMap());
+                    break;
+                case "history":
+                    user.showTransactions();
+                    break;
+                case "balance":
+                    System.out.printf("💰 Balance: $%.2f\n", user.getBalance());
+                    break;
+                case "save":
+                    user.saveToFiles();
+                    break;
+                case "exit":
+                    user.saveToFiles(); // save automatically
+                    System.out.println("👋 Goodbye!");
+                    return;
+                default:
+                    System.out.println("❓ Unknown command.");
+            }
+        }
+    }
+}
