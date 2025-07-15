@@ -1,0 +1,32 @@
+import java.util.ArrayList;
+
+public class ScoreCalculator {
+
+    public static void main(String[] args) {
+        // Example list of student scores
+        ArrayList<Double> scores = new ArrayList<>();
+        scores.add(78.5);
+        scores.add(92.0);
+        scores.add(64.0);
+        scores.add(88.5);
+        scores.add(71.0);
+
+        double total = 0;
+        double highest = Double.MIN_VALUE;
+        double lowest = Double.MAX_VALUE;
+
+        // Calculate total, highest, and lowest
+        for (double score : scores) {
+            total += score;
+            if (score > highest) highest = score;
+            if (score < lowest) lowest = score;
+        }
+
+        double average = total / scores.size();
+
+        // Output results
+        System.out.printf("Average Score: %.2f\n", average);
+        System.out.println("Highest Score: " + highest);
+        System.out.println("Lowest Score: " + lowest);
+    }
+}
